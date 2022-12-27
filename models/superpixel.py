@@ -43,7 +43,35 @@ class Superpixels:
             self.f_shap.append([min(l, w), EC])
 
     def getFText(self):
-        pass
+        """
+
+        需要检索目标超像素点周围的超像素点，能力有限，只检索上下左右、左下、
+        左上、右上、右下八个方向
+        :return:
+        """
+        for i in range(1, self.number_slic + 1):
+            # 获取单个超像素点
+            mask = np.zeros(self.img.shape[:2], dtype="uint8")
+            mask[self.label_slic == i] = 1
+            # 获取外接矩形
+            ind = np.argwhere(mask == 1)
+            x, y, w, h = cv2.boundingRect(ind)
+            # 获取超像素周围元素值
+            surround = self._getSurround_(x, y, w, h)
+            print(surround)
+
+    def _getSurround_(self, x, y, w, h):
+        point = [[x - 1, y - 1], [x + w + 1, y - 1], [x - 1, y + h + 1],
+                 [x + w + 1, y + h + 1], [x + w // 2, y - 1], [x - 1, y + h // 2],
+                 [x + w + 1, y + h // 2], [x + w // 2, y + h + 1]]
+        ix, iy = self.mask_slic.shape
+        num = []
+        for i in point:
+            if 0 < i[0] < ix and 0 < i[1] < iy:
+                number = self.label_slic[i[0]][i[1]]
+                if number not in num:
+                    num.append(number)
+        return num
 
     def getFBound(self):
         pass
@@ -52,9 +80,9 @@ class Superpixels:
 def SLIC(img: np.ndarray, iteration=40):
     """
     :depict 输入图像数据，返回超像素Mask，超像素标签和标签数量
-    :param iteration: int, default 40
-    :param img: numpy.ndarray  image data
-    :return: Mask, Mask label, Mask Number
+    :param iteration: 迭代次数,default 40, int
+    :param img: image data, numpy.ndarray
+    :return: Mask array, 超像素标签 array, 超像素数目 int
     """
     slic = cv2.ximgproc.createSuperpixelSLIC(img, region_size=15, ruler=30.0)
     slic.iterate(iteration)  # 迭代次数

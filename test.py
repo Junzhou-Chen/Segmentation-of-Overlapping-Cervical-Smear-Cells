@@ -16,4 +16,4 @@ if __name__ == '__main__':
     PLT_SHOW(test_img)
     img_1 = Superpixels(test_img)
     PLT_SHOW(img_1.mask_slic)
-    img_1.getFShap()
+    img_1.getFText()
